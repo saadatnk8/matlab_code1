@@ -16,17 +16,11 @@ function MainScript
     ylabel('y')
     zlabel('z')
 
-    function a = phi(t)
-        a = t*(pi/3)/10;    %pi/3 is target phi
-    end
+    phi = @(t) sin(t)*(pi/3);   %pi/3 is target phi
     
-    function b = theta(t)
-        b = t*(pi/2)/10;    %pi/2 is target theta
-    end
-
-    function c = psi(t)
-        c = t*(pi/4)/10;    %pi/4 is target psi
-    end
+    theta = @(t) t*(pi/2); %pi/2 is target theta
+    
+    psi = @(t) t*(pi/4);   %pi/4 is target psi
 
     for j = 0:nSteps
         if h ~= 0
@@ -48,13 +42,22 @@ function MainScript
         set(h,'FaceColor','flat',...
             'CData',cdata,...
             'CDataMapping','direct')
-        pause(0.1)
+        cameramenu
+        pause(0.0001)
         
-        changeAngles = [phi((j+1)*dt) theta((j+1)*dt) psi((j+1)*dt)]; %calculating angles for get d(rotMat)/dt
-        changeRotMat = (rotationMatrix(changeAngles)-rotMat)/dt; %calculating d(rotMat)/dt
+        dx = 1e-6;
+        changeAngles = [phi(t+dx) theta(t + dx) psi(t + dx)]; %calculating angles for get d(rotMat)/dt
+        changeRotMat = (rotationMatrix(changeAngles)-rotMat)/dx; %calculating d(rotMat)/dt
         
-        q = rotMat*changeRotMat; %rotMat*d(rotMat)/dt
+        q = rotMat'*changeRotMat; %rotMat*d(rotMat)/dt
         
+        wX = q(3,2);
+        wY = -q(3,1);    %Extracting Angular Velocities from q
+        wZ = q(2,1);
+        
+        w = [wX wY wZ];
+        vector = w*rotMat';   
+        plot(vector);
     end
 
 end
