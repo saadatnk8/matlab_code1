@@ -1,63 +1,63 @@
-function MainScript
+data = load('copter');         %Loading the cube from the data file
+h = 0;       %Reference to the cube object
+T = 10;     %Time
+dt = 0.1;   %Change in time
+nSteps = ceil(T/dt);
 
-    data = load('cube');         %Loading the cube from the data file
-    h = 0;       %Reference to the cube object
-    T = 10;     %Time
-    dt = 0.1;   %Change in time
-    nSteps = ceil(T/dt);
+update = draw();
 
-    figure
-    myAxes = axes('xlim', [-2 2], 'ylim', [-2 2], 'zlim', [-2 2]);
-    view(3)
-    grid on
-    axis equal
-    hold on
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
+b = 0;
+k = 0;
 
-    phi = @(t) sin(t)*(pi/3);   %pi/3 is target phi
+ 
+phi = @(t) 0*t*(pi/3); %2*t;   %pi/3 is target phi
+theta = @(t) 0*t*(pi/2); %pi/6 + 0*t*(pi/2); %pi/2 is target theta
+psi = @(t) (pi/4)*t + 0*t*(pi/4);   %pi/4 is target psi
+figure(gcf)
+
+for j = 0:nSteps
+
+    t = j*dt;
+    angles = [phi(t) theta(t) psi(t)];
+    rotMat = rotationMatrix(angles);  %Getting rotation matrix from the function
     
-    theta = @(t) t*(pi/2); %pi/2 is target theta
+    %data.p gets points of cube from data file and data.faces gets the
+    %faces
     
-    psi = @(t) t*(pi/4);   %pi/4 is target psi
-
-    for j = 0:nSteps
-        if h ~= 0
-            delete(h);
-        end
+    y = (rotMat*data.p')'; %Correct order: rotMat*data.p' but entire thing transposed to make 'patch' work
         
-        t = j*dt;
-        angles = [phi(t) theta(t) psi(t)];
-        rotMat = rotationMatrix(angles);  %Getting rotation matrix from the function
-        
-        %data.p gets points of cube from data file and data.faces gets the
-        %faces
-        
-        y = (rotMat*data.p')'; %Correct order: rotMat*data.p' but entire thing transposed to make 'patch' work
-
-        h = patch('Faces',data.faces,'Vertices',y,'FaceColor','r');
-        set(gca,'CLim',[0 200])          %Plotting cube and its rotations using patch
-        cdata = [110 2 110 2 50 50];
-        set(h,'FaceColor','flat',...
-            'CData',cdata,...
-            'CDataMapping','direct')
-        cameramenu
-        pause(0.0001)
-        
-        dx = 1e-6;
-        changeAngles = [phi(t+dx) theta(t + dx) psi(t + dx)]; %calculating angles for get d(rotMat)/dt
-        changeRotMat = (rotationMatrix(changeAngles)-rotMat)/dx; %calculating d(rotMat)/dt
-        
-        q = rotMat'*changeRotMat; %rotMat*d(rotMat)/dt
-        
-        wX = q(3,2);
-        wY = -q(3,1);    %Extracting Angular Velocities from q
-        wZ = q(2,1);
-        
-        w = [wX wY wZ];
-        vector = w*rotMat';   
-        plot(vector);
+    %TODO: Does this work?
+    dx = 1e-6;
+    changeAngles = [phi(t+dx) theta(t + dx) psi(t + dx)]; %calculating angles for get d(rotMat)/dt
+    changeRotMat = (rotationMatrix(changeAngles)-rotMat)/dx; %calculating d(rotMat)/dt
+    
+    c = rotMat'*changeRotMat; %rotMat*d(rotMat)/dt
+    
+    wX = c(3,2);
+    wY = -c(3,1);    %Extracting Angular Velocities from q
+    wZ = c(2,1);
+    
+    w = [wX; wY; wZ];
+    u = rotMat*w;
+    
+    update(rotMat);
+    
+    if b~= 0
+        delete(b);
     end
+    b = plot3([0 u(1)], [0 u(2)], [0 u(3)], 'k-', 'LineWidth', 2);
+    
+    invRotMat = rotMat';
+    angVelTensor = changeRotMat*invRotMat;
 
+    if k~= 0
+        delete(k);
+    end
+    q = (rotMat*data.p(1,:)')';
+    vel =(changeRotMat*q')';
+    norm(vel);
+    r = q + 5*vel;
+   
+    k = plot3([q(1) r(1)],[q(2) r(2)],[q(3) r(3)],'b--','LineWidth',2);
+    pause(0.05)
 end
