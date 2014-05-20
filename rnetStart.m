@@ -2,14 +2,18 @@
 function rnetStart
     update = draw();
 
-    rnet(@rnetFunction);
-    function rnetFunction(data)
+    controller = rnet;
+    
+    controller.receive(@rnetFunction);
+    function ret = rnetFunction(data)
         
         angles = [data.phi data.theta data.psi];
         rotMat = rotationMatrix(angles);
         
         update(rotMat);
-        pause(0.01)
+        drawnow;
+        
+        ret = 0;
     end
 
 end

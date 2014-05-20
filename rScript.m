@@ -1,10 +1,18 @@
 function rScript
     Is = [1 2 3]; %Moment of inertias
 
-    dur = 0.05;
-    amp = 2;
-    torque = @(t) [ 0 0 1 ]*amp*exp( -(t - 1)^2/dur );
-
+    torque = @torqfunc;
+    function torq = torqfunc(t)
+        torq = [0 0 0];
+        if t <= 2
+           torq(1) = 1; 
+        end
+        
+        if t >= 3
+           torq(1) = -1; 
+        end
+    end
+    
     
     omegaInit = [0; 0; 0]; %Initial angular velocities
     AInit = eye(3); %Initial orientation    
@@ -31,20 +39,37 @@ function rScript
 
     update = draw();
 
+    tlast = 0;
     function status = OFcn(t,state,flag)
+        status = 0;
+        
         if strcmp(flag,'init')
-            status = [0.1 0 0];
+            
+        elseif strcmp(flag, 'done')
+            
         else
+            
+            dt = t - tlast;
+            tlast = t;
+            
+            if dt > 1e-3
+                pause(dt);
+            else
+                return
+            end
+            
+            
             if length(state) > 0
                 A = reshape(state(4:12), 3, 3);
                 update(A);
-                pause(0.1)
             end
-            status = 0;
+            
         end
     end
 
     options = odeset('OutputFcn',@OFcn,'RelTol',1e-10,'AbsTol',1e-10);
-    [t, states] = ode45(@dstate, [0 10], stateInit, options); 
+    [times, states] = ode45(@dstate, [0 10], stateInit, options); 
 
+    
+    
 end
