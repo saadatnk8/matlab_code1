@@ -1,18 +1,4 @@
-function rScript
-    Is = [1 2 3]; %Moment of inertias
-
-    torque = @torqfunc;
-    function torq = torqfunc(t)
-        torq = [0 0 0];
-        if t <= 2
-           torq(1) = 1; 
-        end
-        
-        if t >= 3
-           torq(1) = -1; 
-        end
-    end
-    
+function MainScriptOde(Is,torque)
     
     omegaInit = [0; 0; 0]; %Initial angular velocities
     AInit = eye(3); %Initial orientation    
@@ -68,8 +54,6 @@ function rScript
     end
 
     options = odeset('OutputFcn',@OFcn,'RelTol',1e-10,'AbsTol',1e-10);
-    [times, states] = ode45(@dstate, [0 10], stateInit, options); 
+    [times, states] = ode45(@dstate, [0 100], stateInit, options); 
 
-    
-    
 end

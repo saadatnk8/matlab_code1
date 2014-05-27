@@ -1,7 +1,7 @@
 function update = draw()
     data = load('copter');         %Loading the cube from the data file
 
-    figure
+    
     myAxes = axes('xlim', [-1 1], 'ylim', [-1 1], 'zlim', [-1 1]);
     view(3)
     grid on
@@ -13,7 +13,7 @@ function update = draw()
     zlabel('z')
 
     camlight left; lighting phong;
-    cameramenu;
+    
 
     h(1) = patch('Faces',data.faces,'Vertices',data.p,'FaceColor','c','EdgeColor','none');
     obj = hgtransform('parent', myAxes);
