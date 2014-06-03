@@ -55,9 +55,5 @@ for j = 0:nSteps
     end
     q = (rotMat*data.p(1,:)')';
     vel =(changeRotMat*q')';
-    norm(vel);
-    r = q + 5*vel;
-   
-    k = plot3([q(1) r(1)],[q(2) r(2)],[q(3) r(3)],'b--','LineWidth',2);
     pause(0.05)
 end

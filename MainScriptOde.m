@@ -52,8 +52,15 @@ function MainScriptOde(Is,torque)
             
         end
     end
-
-    options = odeset('OutputFcn',@OFcn,'RelTol',1e-10,'AbsTol',1e-10);
-    [times, states] = ode45(@dstate, [0 100], stateInit, options); 
+    
+    global running;
+    running = 1;
+    
+    
+    while running == 1
+        options = odeset('OutputFcn',@OFcn,'RelTol',1e-5,'AbsTol',1e-5);
+        [times states] = ode45(@dstate, [0 0.5], stateInit, options);
+        stateInit = states(size(states,1),:)';
+    end
 
 end
